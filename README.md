@@ -7,7 +7,7 @@ This project contains a connector to push MISP IOCs to Azure Sentinel and Micros
 - Credentials to connect to MISP server
 - Credentials to connect to MS Graph. See https://techcommunity.microsoft.com/t5/azure-sentinel/integrating-open-source-threat-feeds-with-misp-and-sentinel/ba-p/1350371 on how to create the app registry and add the permittions to push the TI via MS Graph.
 ### Python environment
-Install dependencies on a python 3.8+ environment
+Install dependencies on a python 3.8+ environment (probably works with older versions of python, but it has not been tested).
 ~~~shell
 pip install loguru pymisp
 ~~~
