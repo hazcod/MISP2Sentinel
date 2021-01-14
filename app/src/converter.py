@@ -99,6 +99,7 @@ HANDLER_SIMPLE_TYPES = {
     'domain': 'domainName',
     'hostname': 'domainName',
     'url': 'url',
+    'link': 'url',
     'email-subject': 'emailSubject',
     'mutex': 'fileMutexName'
 }
