@@ -33,7 +33,8 @@
         "networkDestinationPort": "443",
         "passiveOnly": false,
         "tags": [
-            "Network activity"
+            "Network activity",
+            "event_id_1019"
         ],
         "targetProduct": "Azure Sentinel",
         "threatType": "WatchList",

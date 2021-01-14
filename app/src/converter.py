@@ -60,6 +60,7 @@ def __extract_tags(misp_attribute, msgraph_ioc):
     list_tags = [tag['name'].strip() for tag in misp_attribute['Tag']] if 'Tag' in misp_attribute else []
     # TODO: remove next line if category can be mapped to ms-graph
     list_tags.append(misp_attribute['category'].strip()) # Add category as tag, to map category somehow.
+    list_tags.append(f"event_id_{misp_attribute['event_id']}")
     msgraph_ioc["tags"] = list_tags
     for tag in list_tags:
         if tag.startswith('tlp:'):

@@ -32,7 +32,8 @@
         "lastReportedDateTime": "2020-02-26T17:05:11+00:00",
         "passiveOnly": false,
         "tags": [
-            "Network activity"
+            "Network activity",
+            "event_id_698"
         ],
         "targetProduct": "Azure Sentinel",
         "threatType": "WatchList",

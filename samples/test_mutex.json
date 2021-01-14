@@ -32,7 +32,8 @@
         "lastReportedDateTime": "2020-02-17T11:47:11+00:00",
         "passiveOnly": false,
         "tags": [
-            "Artifacts dropped"
+            "Artifacts dropped",
+            "event_id_689"
         ],
         "targetProduct": "Azure Sentinel",
         "threatType": "WatchList",

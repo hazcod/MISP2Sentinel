@@ -41,7 +41,8 @@
         "passiveOnly": false,
         "tags": [
             "tlp:green",
-            "Network activity"
+            "Network activity",
+            "event_id_642"
         ],
         "targetProduct": "Azure Sentinel",
         "threatType": "WatchList",

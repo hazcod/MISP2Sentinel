@@ -128,7 +128,8 @@
             "VenomLnk",
             "Windows",
             "tlp:green",
-            "Payload delivery"
+            "Payload delivery",
+            "event_id_1056"
         ],
         "lastReportedDateTime": "2020-07-21T07:44:17+00:00",
         "externalId": "5f169cd1-bcf4-47be-bed5-7c170a010004",
