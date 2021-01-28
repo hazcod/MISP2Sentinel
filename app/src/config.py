@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 # TODO: this logic should be run only once or not be in the configfile
 end = datetime.now().replace(minute=0, second=0, microsecond=0)
-start = end - timedelta(hours=1)
+start = end - timedelta(days=1)
 start_ts = int(datetime.timestamp(start))
 end_ts = int(datetime.timestamp(end))
 
