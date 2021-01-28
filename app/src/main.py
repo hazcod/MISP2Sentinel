@@ -31,8 +31,9 @@ def main():
             push_to_msgraph += 1 if combined_misp_msgraph_dict['post_status'] == "SUCCESS" else 0
 
     misp_attrs = len(combined_misp_msgraph_dicts)
-    logging.info( \
-        'MISP attrs: %s -> into MSGraph IOC: %s -> pushed to MSGraph: %s. Ignored: %s, ignored defender: %s, corrupt/unknown: %s.',
+    logging.info(
+        "(%s, %s, %s, %s, %s, %s) - "
+        '(MISP attrs, as MSGraph IOC, pushed to MSGraph, Ignored, ignored defender, corrupt/unknown)',
         misp_attrs,
         transform_counters['SUCCESS'],
         push_to_msgraph,
@@ -40,7 +41,6 @@ def main():
         transform_counters['IGNORE DEFENDER'],
         transform_counters['UNKNOWN']
     )
-    logging.info("Finished")
 
 if __name__ == "__main__":
     main()
