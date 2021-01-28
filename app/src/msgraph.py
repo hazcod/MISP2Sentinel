@@ -4,8 +4,8 @@
 
 import json
 from datetime import datetime
-from loguru import logger
-from requests.packages.urllib3.util import Retry
+import logging
+from urllib3.util import Retry
 from requests.adapters import HTTPAdapter
 from requests import Session
 import config
@@ -31,7 +31,7 @@ class MSGraphConnector():
     #     self.__update_headers_if_needed()
     #     iocs_to_be_sent = list(map(lambda d: d['msgraph_ioc'], combined_misp_msgraph_dicts))
     #     request_body = {'value': iocs_to_be_sent}
-    #     logger.debug(f'Posting: {repr(json.dumps(request_body))}')
+    #     logging.debug(f'Posting: {repr(json.dumps(request_body))}')
     #     json_response = requests.post(GRAPH_BULK_POST_URL, headers=self.__headers, json=request_body).json()
     #     self.__handle_post_response(json_response)
 
@@ -46,9 +46,11 @@ class MSGraphConnector():
     def __handle_post_response(combined_misp_msgraph_dict, json_response):
         if 'error' in json_response:
             combined_misp_msgraph_dict['post_status'] = "ERROR"
-            logger.error( \
-                f'Error posting: {repr(json.dumps(combined_misp_msgraph_dict))}. ' \
-                f'Response: {repr(json.dumps(json_response))}')
+            logging.error( \
+                'Error posting: %s. ' \
+                'Response: %s',
+                repr(json.dumps(combined_misp_msgraph_dict)),
+                repr(json.dumps(json_response)))
         else:
             combined_misp_msgraph_dict['post_status'] = "SUCCESS"
 

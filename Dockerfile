@@ -18,7 +18,6 @@ RUN mkdir -p /code/
 COPY --from=intermediate /misp-to-sentinel-and-defender-connector/app/src/ /code/misp_to_msgraph/
 WORKDIR /code/misp_to_msgraph
 RUN pip install pymisp==2.4.119.1
-RUN pip install loguru
 # Copy custom config file
 ADD app/src/ /code/misp_to_msgraph/
 

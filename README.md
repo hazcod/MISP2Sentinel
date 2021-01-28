@@ -9,7 +9,7 @@ This project contains a connector to push MISP IOCs to Azure Sentinel and Micros
 ### Python environment
 Install dependencies on a python 3.8+ environment (probably works with older versions of python, but it has not been tested).
 ~~~shell
-pip install loguru pymisp
+pip install pymisp
 ~~~
 
 ## Download
