@@ -24,7 +24,6 @@ class TestMispEventToMsgraphConverter(unittest.TestCase):
     '''Test class for MispEventToMsgraphConverter.'''
     def test_converter_from_json_files(self):
         '''Test converter class using json files with input/desired output.'''
-        self.maxDiff = None
         for test_file in glob.glob("samples/test*.json"):
             logging.info('testing file: %s', test_file)
             with open(test_file, "r") as json_file:
