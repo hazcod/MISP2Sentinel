@@ -27,3 +27,5 @@ ENV USER sync-user
 ENV HOME /home/sync-user
 WORKDIR /home/sync-user
 USER sync-user
+
+ENTRYPOINT python /code/misp_to_msgraph/main.py 2>&1 | grep "Unverified HTTPS request is being made to host" -v | grep "  InsecureRequestWarning" -v
