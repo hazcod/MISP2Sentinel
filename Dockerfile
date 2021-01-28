@@ -6,7 +6,7 @@ LABEL stage=intermediate
 RUN apk update && \
     apk add --update git
 
-RUN git clone https://github.com/nv-pipo/misp-to-sentinel-and-defender-connector.git
+RUN git clone --branch stable https://github.com/nv-pipo/misp-to-sentinel-and-defender-connector.git
 
 FROM python:3.7-alpine
 ENV PYTHONUNBUFFERED=1
