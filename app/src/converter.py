@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 """Converter from MISP to MS-Graph format."""
 
+import logging
 import json
 from datetime import datetime, timezone, timedelta
-from loguru import logger
+
 
 # TODO:
 # keep track of pushed IOCs
@@ -26,7 +27,7 @@ def transform_misp_to_msgraph(misp_attribute, config):
         __set_expiration_datetime(combined_misp_msgraph['msgraph_ioc'], config)
         __extract_tags(misp_attribute, combined_misp_msgraph['msgraph_ioc'])
         combined_misp_msgraph['transform_status'] = "SUCCESS"
-    logger.trace(f'combined_misp_msgraph after transform: {repr(json.dumps(combined_misp_msgraph))}')
+    logging.debug('combined_misp_msgraph after transform: %s', repr(json.dumps(combined_misp_msgraph)))
     return combined_misp_msgraph
 
 REQUIRED_FIELDS_DEFENDER = set(["domainName", "url", "networkDestinationIPv4", "networkDestinationIPv6", "fileHashValue"])
@@ -80,7 +81,7 @@ def __handle_type_value(misp_attribute):
 
 def __get_msgraph_ioc(misp_attribute):
     if 'type' not in misp_attribute:
-        logger.error(f'Corrupt MISP attribute. Full MISP attribute: {repr(json.dumps(misp_attribute))}')
+        logging.error('Corrupt MISP attribute. Full MISP attribute: %s', repr(json.dumps(misp_attribute)))
         return (None, "CORRUPT")
     (msgraph_ioc, transform_status) = \
         (__simple_handler(misp_attribute), "SUCCESS") if misp_attribute['type'] in HANDLER_SIMPLE_TYPES else \
@@ -91,7 +92,7 @@ def __get_msgraph_ioc(misp_attribute):
         (None, "IGNORED") if misp_attribute['type'] in HANDLER_IGNORED_TYPES else \
         (None, "UNKNOWN")
     if transform_status == 'UNKNOWN':
-        logger.error(f'Unknown MISP attribute type. Full MISP attribute: {repr(json.dumps(misp_attribute))}')
+        logging.error('Unknown MISP attribute type. Full MISP attribute: %s', repr(json.dumps(misp_attribute)))
     return (msgraph_ioc, transform_status)
 
 HANDLER_SIMPLE_TYPES = {

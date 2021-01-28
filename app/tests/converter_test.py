@@ -3,10 +3,10 @@
 """Test of converter from MISP to MS graph format."""
 
 import unittest
+import logging
 import json
 import glob
 from datetime import datetime, timedelta, timezone
-from loguru import logger
 from converter import transform_misp_to_msgraph
 
 class Config:
@@ -24,9 +24,8 @@ class TestMispEventToMsgraphConverter(unittest.TestCase):
     '''Test class for MispEventToMsgraphConverter.'''
     def test_converter_from_json_files(self):
         '''Test converter class using json files with input/desired output.'''
-        self.maxDiff = None
         for test_file in glob.glob("samples/test*.json"):
-            logger.info(f"testing file: {test_file}")
+            logging.info('testing file: %s', test_file)
             with open(test_file, "r") as json_file:
                 json_input_and_desired_output = json.load(json_file)
                 misp_attribute = json_input_and_desired_output['input']
