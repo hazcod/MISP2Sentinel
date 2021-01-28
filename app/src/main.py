@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 def main():
     '''Main script/function of the whole project.'''
-    logging.info("Starting")
+    logging.info("Starting: %s -> %s", config.start, config.end)
     msgraph_connector = MSGraphConnector()
     misp_attributes = get_misp_attributes()
     combined_misp_msgraph_dicts = list(map(lambda misp_attr: transform_misp_to_msgraph(misp_attr, config), misp_attributes))
