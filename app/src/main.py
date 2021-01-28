@@ -26,9 +26,10 @@ def main():
     push_counter = 0
     for combined_misp_msgraph_dict in combined_misp_msgraph_dicts:
         transform_counters[combined_misp_msgraph_dict['transform_status']] += 1
-        if combined_misp_msgraph_dict['transform_status'] == "SUCCESS":
+        # if combined_misp_msgraph_dict['transform_status'] == "SUCCESS":
             # msgraph_connector.post_one_ioc_to_graph(combined_misp_msgraph_dict)
-            push_counter += 1 if combined_misp_msgraph_dict['post_status'] == "SUCCESS" else 0
+            # push_counter += 1 if combined_misp_msgraph_dict['post_status'] == "SUCCESS" else 0
+
     num_total = len(combined_misp_msgraph_dicts)
     logging.info('Total number of MISP attributes pulled: %s.', num_total)
     if num_total > 0:
