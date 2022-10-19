@@ -1,27 +1,25 @@
-'''Config variables script.'''
+"""Config variables script."""
 from os import environ
-from datetime import datetime, timedelta
 
-# TODO: this logic should be run only once or not be in the configfile
-end = datetime.now().replace(minute=0, second=0, microsecond=0)
-start = end - timedelta(hours=1)
-start_ts = int(datetime.timestamp(start))
-end_ts = int(datetime.timestamp(end))
-
+# MISP
+MISP_BASE_URL = environ.get("MISP_BASE_URL")
+MISP_KEY = environ.get("MISP_KEY")
+MISP_CA_BUNDLE = environ.get("MISP_CA_BUNDLE")
 MISP_EVENT_FILTERS = {
-    'timestamp': [start_ts, end_ts],
-    'published': True
+    "timestamp": "5h",
+    "published": True,
 }
-MISP_KEY = environ.get('MISP_KEY')
-MISP_DOMAIN = environ.get('MISP_BASE_URL')
-MISP_VERIFYCERT = False
+MISP_TIMEOUT = 120
 
+# GRAPH
 GRAPH_AUTH = {
-    'tenant': environ.get('MSGRAPH_TENANT_ID'),
-    'client_id': environ.get('MSGRAPH_CLIENT_ID'),
-    'client_secret': environ.get('MSGRAPH_CLIENT_SECRET')
+    "tenant": environ.get("MSGRAPH_TENANT_ID"),
+    "client_id": environ.get("MSGRAPH_CLIENT_ID"),
+    "client_secret": environ.get("MSGRAPH_CLIENT_SECRET"),
 }
-TARGET_PRODUCT = environ.get('MSGRAPH_TARGET_PRODUCT')
-ACTION = 'alert'
-PASSIVE_ONLY = False
-DAYS_TO_EXPIRE = int(environ.get('MSGRAPH_DAYS_TO_EXPIRE'))
+GRAPH_TARGET_PRODUCT = environ.get("MSGRAPH_TARGET_PRODUCT")
+GRAPH_ACTION = "alert"
+GRAPH_PASSIVE_ONLY = False
+GRAPH_DAYS_TO_EXPIRE = (
+    int(environ.get("MSGRAPH_DAYS_TO_EXPIRE")) if "MSGRAPH_DAYS_TO_EXPIRE" in environ else None
+)
