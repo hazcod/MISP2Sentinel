@@ -14,17 +14,12 @@ from config import (
 )
 
 
-def transform_misp_to_msgraph(misp_ioc):
+def transform_misp_to_msgraph(misp_ioc: dict[str, any]) -> dict[str, any]:
     """Receive a 'misp attribute' and return a msgraph IOC."""
     msgraph_ioc = __get_msgraph_ioc(misp_ioc)
 
     if msgraph_ioc is not None:
-        msgraph_ioc["description"] = misp_ioc["Event"]["info"]
-        msgraph_ioc["externalId"] = misp_ioc["uuid"]
-        __set_last_reported_datetime(misp_ioc, msgraph_ioc)
-        __set_global_values(msgraph_ioc)
-        __set_expiration_datetime(msgraph_ioc)
-        __extract_tags(misp_ioc, msgraph_ioc)
+        __add_extra_data_to_msgraph_ioc(msgraph_ioc, misp_ioc)
 
     logging.debug("combined_misp_msgraph after transform: %s", repr(json.dumps(msgraph_ioc)))
     return msgraph_ioc
@@ -35,30 +30,30 @@ REQUIRED_FIELDS_DEFENDER = set(
 )
 
 
-def __set_last_reported_datetime(misp_attribute, msgraph_ioc):
-    """Set lastReportedDateTime from the timestamp."""
-    # TODO: check that the input timestamp is actually in UTC
-    last_reported_datetime = datetime.fromtimestamp(int(misp_attribute["timestamp"]), timezone.utc)
-    msgraph_ioc["lastReportedDateTime"] = last_reported_datetime.isoformat()
-
-
-def __set_expiration_datetime(msgraph_ioc):
-    """Set the expiration datetime."""
-    expiration_datetime = datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
-        days=GRAPH_DAYS_TO_EXPIRE
-    )
-    msgraph_ioc["expirationDateTime"] = expiration_datetime.isoformat()
-
-
-def __set_global_values(msgraph_ioc):
+def __add_extra_data_to_msgraph_ioc(msgraph_ioc: dict[str, any], misp_ioc: dict[str, any]):
     """Set the "hardcoded"/config fiend values."""
+
+    msgraph_ioc["description"] = misp_ioc["Event"]["info"]
+    msgraph_ioc["externalId"] = misp_ioc["uuid"]
+
+    msgraph_ioc["threatType"] = "WatchList"
+
     msgraph_ioc["action"] = GRAPH_ACTION
     msgraph_ioc["passiveOnly"] = GRAPH_PASSIVE_ONLY
-    msgraph_ioc["threatType"] = "WatchList"
     msgraph_ioc["targetProduct"] = GRAPH_TARGET_PRODUCT
 
+    # assume timestamp is in UTC, set lastReportedDateTime with it (as isoformat)
+    msgraph_ioc["lastReportedDateTime"] = datetime.fromtimestamp(
+        int(misp_ioc["timestamp"]), timezone.utc
+    ).isoformat()
+    msgraph_ioc["expirationDateTime"] = (
+        datetime.now(timezone.utc) + timedelta(days=GRAPH_DAYS_TO_EXPIRE)
+    ).isoformat()
 
-def __extract_tags(misp_attribute, msgraph_ioc):
+    __extract_tags(misp_ioc, msgraph_ioc)
+
+
+def __extract_tags(misp_attribute: dict[str, any], msgraph_ioc: dict[str, any]):
     """Handle tags extraction."""
     list_tags = (
         [tag["name"].strip() for tag in misp_attribute["Tag"]] if "Tag" in misp_attribute else []
@@ -83,7 +78,7 @@ def __extract_tags(misp_attribute, msgraph_ioc):
 HANDLER_IGNORED_TYPES = ["email-body", "btc", "ssdeep", "yara", "other", "vulnerability"]
 
 
-def __get_msgraph_ioc(misp_attribute):
+def __get_msgraph_ioc(misp_attribute: dict[str, any]):
     if "type" not in misp_attribute:
         logging.error(
             "Corrupt MISP attribute. Full MISP attribute: %s", repr(json.dumps(misp_attribute))
@@ -135,11 +130,11 @@ HANDLER_SIMPLE_TYPES = {
 }
 
 
-def __simple_handler(misp_attribute):
+def __simple_handler(misp_attribute: dict[str, any]) -> dict[str, any]:
     return {HANDLER_SIMPLE_TYPES[misp_attribute["type"]]: misp_attribute["value"]}
 
 
-def __domain_ip_handler(misp_attribute):
+def __domain_ip_handler(misp_attribute: dict[str, any]) -> dict[str, any]:
     msgraph_ioc = {}
     splitted_value = misp_attribute["value"].split("|")
     msgraph_ioc["domainName"] = splitted_value[0]
@@ -148,7 +143,7 @@ def __domain_ip_handler(misp_attribute):
     return msgraph_ioc
 
 
-def __email_src_handler(misp_attribute):
+def __email_src_handler(misp_attribute: dict[str, any]) -> dict[str, any]:
     msgraph_ioc = {}
     msgraph_ioc["emailSenderAddress"] = misp_attribute["value"]
     msgraph_ioc["emailSourceDomain"] = misp_attribute["value"].split("@")[1]
@@ -165,7 +160,7 @@ HANDLER_FILEHASH_TYPES = [
 ]
 
 
-def __filehash_handler(misp_attribute):
+def __filehash_handler(misp_attribute: dict[str, any]) -> dict[str, any]:
     msgraph_ioc = {}
     msgraph_ioc["fileHashType"] = misp_attribute["type"].replace("filename|", "")
     if "|" in misp_attribute["value"]:
@@ -178,13 +173,16 @@ def __filehash_handler(misp_attribute):
 
 
 IP_VERSION_SELECTOR = lambda value: "IPv4" if "." in value else "IPv6"
-NETWORK_DIRECTION = lambda type: "networkDestination" if "ip-dst" in type else "networkSource"
+NETWORK_DIRECTION = {
+    "ip-dst": "networkDestination",
+    "ip-src": "networkSource",
+}
 HANDLER_IP_TYPES = ["ip-dst", "ip-dst|port", "ip-src", "ip-src|port"]
 
 
-def __network_handler(misp_attribute):
+def __network_handler(misp_attribute: dict[str, any]) -> dict[str, any]:
     msgraph_ioc = {}
-    network_direction = NETWORK_DIRECTION(misp_attribute["type"])
+    network_direction = NETWORK_DIRECTION[misp_attribute["type"].split("|")[0]]
     ip_version = IP_VERSION_SELECTOR(misp_attribute["value"])
     if "|" in misp_attribute["value"]:
         splitted_value = misp_attribute["value"].split("|")
