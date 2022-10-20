@@ -16,22 +16,18 @@ from config import (
 
 def transform_misp_to_msgraph(misp_ioc):
     """Receive a 'misp attribute' and return a msgraph IOC."""
-    combined_misp_msgraph = __handle_type_value(misp_attribute)
-    __validate_defender_fields(
-        combined_misp_msgraph, config
-    )  # Ignore IOC if it doesn't have a required field by defender.
-    if combined_misp_msgraph["msgraph_ioc"] is not None:
-        combined_misp_msgraph["msgraph_ioc"]["description"] = misp_attribute["Event"]["info"]
-        combined_misp_msgraph["msgraph_ioc"]["externalId"] = misp_attribute["uuid"]
-        __set_last_reported_datetime(misp_attribute, combined_misp_msgraph["msgraph_ioc"])
-        __set_global_values(combined_misp_msgraph["msgraph_ioc"], config)
-        __set_expiration_datetime(combined_misp_msgraph["msgraph_ioc"], config)
-        __extract_tags(misp_attribute, combined_misp_msgraph["msgraph_ioc"])
-        combined_misp_msgraph["transform_status"] = "SUCCESS"
-    logging.debug(
-        "combined_misp_msgraph after transform: %s", repr(json.dumps(combined_misp_msgraph))
-    )
-    return combined_misp_msgraph
+    msgraph_ioc = __get_msgraph_ioc(misp_ioc)
+
+    if msgraph_ioc is not None:
+        msgraph_ioc["description"] = misp_ioc["Event"]["info"]
+        msgraph_ioc["externalId"] = misp_ioc["uuid"]
+        __set_last_reported_datetime(misp_ioc, msgraph_ioc)
+        __set_global_values(msgraph_ioc)
+        __set_expiration_datetime(msgraph_ioc)
+        __extract_tags(misp_ioc, msgraph_ioc)
+
+    logging.debug("combined_misp_msgraph after transform: %s", repr(json.dumps(msgraph_ioc)))
+    return msgraph_ioc
 
 
 REQUIRED_FIELDS_DEFENDER = set(
@@ -87,23 +83,12 @@ def __extract_tags(misp_attribute, msgraph_ioc):
 HANDLER_IGNORED_TYPES = ["email-body", "btc", "ssdeep", "yara", "other", "vulnerability"]
 
 
-def __handle_type_value(misp_attribute):
-    """Extract and map the MISP value onto the MSGraph IOC. Returns a dict with both representations."""
-    combined_misp_msgraph = {}
-    combined_misp_msgraph["misp_attribute"] = misp_attribute
-    (
-        combined_misp_msgraph["msgraph_ioc"],
-        combined_misp_msgraph["transform_status"],
-    ) = __get_msgraph_ioc(misp_attribute)
-    return combined_misp_msgraph
-
-
 def __get_msgraph_ioc(misp_attribute):
     if "type" not in misp_attribute:
         logging.error(
             "Corrupt MISP attribute. Full MISP attribute: %s", repr(json.dumps(misp_attribute))
         )
-        return (None, "CORRUPT")
+        return None
     (msgraph_ioc, transform_status) = (
         (__simple_handler(misp_attribute), "SUCCESS")
         if misp_attribute["type"] in HANDLER_SIMPLE_TYPES
@@ -124,7 +109,19 @@ def __get_msgraph_ioc(misp_attribute):
             "Unknown MISP attribute type. Full MISP attribute: %s",
             repr(json.dumps(misp_attribute)),
         )
-    return (msgraph_ioc, transform_status)
+
+    # Ignore IOC if it doesn't have a required field by defender.
+    if (
+        GRAPH_TARGET_PRODUCT == "Microsoft Defender ATP"
+        and len(REQUIRED_FIELDS_DEFENDER.intersection(msgraph_ioc.keys())) == 0
+    ):
+        logging.error(
+            "MISP IOC didn't have all data required by Defender: %s",
+            repr(json.dumps(misp_attribute)),
+        )
+        return None
+
+    return msgraph_ioc
 
 
 HANDLER_SIMPLE_TYPES = {
