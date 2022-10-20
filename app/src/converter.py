@@ -6,16 +6,15 @@ import json
 import logging
 from datetime import datetime, timedelta, timezone
 
-# TODO:
-# keep track of pushed IOCs
-# uuid, timestamp, time expiration
+from config import (
+    GRAPH_ACTION,
+    GRAPH_DAYS_TO_EXPIRE,
+    GRAPH_PASSIVE_ONLY,
+    GRAPH_TARGET_PRODUCT,
+)
 
-# if time expiration > now, remove from list
-# if uuid and timestamp exist in db, skip pushing IOC
-# if uuid matches and timestamp is newer, update IOC on MSGraph
 
-
-def transform_misp_to_msgraph(misp_attribute, config):
+def transform_misp_to_msgraph(misp_ioc):
     """Receive a 'misp attribute' and return a msgraph IOC."""
     combined_misp_msgraph = __handle_type_value(misp_attribute)
     __validate_defender_fields(
@@ -40,16 +39,6 @@ REQUIRED_FIELDS_DEFENDER = set(
 )
 
 
-def __validate_defender_fields(combined_misp_msgraph, config):
-    if config.TARGET_PRODUCT == "Microsoft Defender ATP":
-        if (
-            len(REQUIRED_FIELDS_DEFENDER.intersection(combined_misp_msgraph["msgraph_ioc"].keys()))
-            == 0
-        ):
-            combined_misp_msgraph["transform_status"] = "IGNORE DEFENDER"
-            combined_misp_msgraph["msgraph_ioc"] = None
-
-
 def __set_last_reported_datetime(misp_attribute, msgraph_ioc):
     """Set lastReportedDateTime from the timestamp."""
     # TODO: check that the input timestamp is actually in UTC
@@ -57,20 +46,20 @@ def __set_last_reported_datetime(misp_attribute, msgraph_ioc):
     msgraph_ioc["lastReportedDateTime"] = last_reported_datetime.isoformat()
 
 
-def __set_expiration_datetime(msgraph_ioc, config):
+def __set_expiration_datetime(msgraph_ioc):
     """Set the expiration datetime."""
     expiration_datetime = datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(
-        days=config.DAYS_TO_EXPIRE
+        days=GRAPH_DAYS_TO_EXPIRE
     )
     msgraph_ioc["expirationDateTime"] = expiration_datetime.isoformat()
 
 
-def __set_global_values(msgraph_ioc, config):
+def __set_global_values(msgraph_ioc):
     """Set the "hardcoded"/config fiend values."""
-    msgraph_ioc["action"] = config.ACTION
-    msgraph_ioc["passiveOnly"] = config.PASSIVE_ONLY
+    msgraph_ioc["action"] = GRAPH_ACTION
+    msgraph_ioc["passiveOnly"] = GRAPH_PASSIVE_ONLY
     msgraph_ioc["threatType"] = "WatchList"
-    msgraph_ioc["targetProduct"] = config.TARGET_PRODUCT
+    msgraph_ioc["targetProduct"] = GRAPH_TARGET_PRODUCT
 
 
 def __extract_tags(misp_attribute, msgraph_ioc):
