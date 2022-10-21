@@ -6,12 +6,7 @@ import json
 import logging
 from datetime import datetime, timedelta, timezone
 
-from config import (
-    GRAPH_ACTION,
-    GRAPH_DAYS_TO_EXPIRE,
-    GRAPH_PASSIVE_ONLY,
-    GRAPH_TARGET_PRODUCT,
-)
+from config import AZ_ACTION, AZ_DAYS_TO_EXPIRE, AZ_PASSIVE_ONLY, AZ_TARGET_PRODUCT
 
 
 def transform_misp_to_msgraph(misp_ioc: dict[str, any]) -> dict[str, any]:
@@ -38,16 +33,16 @@ def __add_extra_data_to_msgraph_ioc(msgraph_ioc: dict[str, any], misp_ioc: dict[
 
     msgraph_ioc["threatType"] = "WatchList"
 
-    msgraph_ioc["action"] = GRAPH_ACTION
-    msgraph_ioc["passiveOnly"] = GRAPH_PASSIVE_ONLY
-    msgraph_ioc["targetProduct"] = GRAPH_TARGET_PRODUCT
+    msgraph_ioc["action"] = AZ_ACTION
+    msgraph_ioc["passiveOnly"] = AZ_PASSIVE_ONLY
+    msgraph_ioc["targetProduct"] = AZ_TARGET_PRODUCT
 
     # assume timestamp is in UTC, set lastReportedDateTime with it (as isoformat)
     msgraph_ioc["lastReportedDateTime"] = datetime.fromtimestamp(
         int(misp_ioc["timestamp"]), timezone.utc
     ).isoformat()
     msgraph_ioc["expirationDateTime"] = (
-        datetime.now(timezone.utc) + timedelta(days=GRAPH_DAYS_TO_EXPIRE)
+        datetime.now(timezone.utc) + timedelta(days=AZ_DAYS_TO_EXPIRE)
     ).isoformat()
 
     __extract_tags(misp_ioc, msgraph_ioc)
@@ -107,7 +102,7 @@ def __get_msgraph_ioc(misp_attribute: dict[str, any]):
 
     # Ignore IOC if it doesn't have a required field by defender.
     if (
-        GRAPH_TARGET_PRODUCT == "Microsoft Defender ATP"
+        AZ_TARGET_PRODUCT == "Microsoft Defender ATP"
         and len(REQUIRED_FIELDS_DEFENDER.intersection(msgraph_ioc.keys())) == 0
     ):
         logging.error(
