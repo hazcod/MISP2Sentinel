@@ -13,7 +13,7 @@ from config import (
 )
 
 
-def get_iocs() -> dict[str, any]:
+def get_iocs(ioc_types: list[str]) -> dict[str, any]:
     """Method to pull the attributes (IOCs) from MISP server."""
     if not (MISP_BASE_URL and MISP_EVENT_FILTERS and MISP_KEY and MISP_TIMEOUT):
         raise Exception("Environment variables for MISP not available")
@@ -24,7 +24,8 @@ def get_iocs() -> dict[str, any]:
         "Content-Type": "application/json",
     }
     url = f"{MISP_BASE_URL}/attributes/restSearch"
-    data = MISP_EVENT_FILTERS
+    data = MISP_EVENT_FILTERS.copy()
+    data["type"] = ioc_types
     ssl_verify = True
     if MISP_CA_BUNDLE:
         ssl_verify = httpx.create_ssl_context()
