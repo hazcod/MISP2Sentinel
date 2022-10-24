@@ -70,51 +70,7 @@ def __extract_tags(misp_attribute: dict[str, any], msgraph_ioc: dict[str, any]):
         msgraph_ioc["tlpLevel"] = "unknown"
 
 
-HANDLER_IGNORED_TYPES = ["email-body", "btc", "ssdeep", "yara", "other", "vulnerability"]
-
-
-def __get_msgraph_ioc(misp_attribute: dict[str, any]):
-    if "type" not in misp_attribute:
-        logging.error(
-            "Corrupt MISP attribute. Full MISP attribute: %s", repr(json.dumps(misp_attribute))
-        )
-        return None
-    (msgraph_ioc, transform_status) = (
-        (__simple_handler(misp_attribute), "SUCCESS")
-        if misp_attribute["type"] in HANDLER_SIMPLE_TYPES
-        else (__filehash_handler(misp_attribute), "SUCCESS")
-        if misp_attribute["type"] in HANDLER_FILEHASH_TYPES
-        else (__email_src_handler(misp_attribute), "SUCCESS")
-        if misp_attribute["type"] == "email-src"
-        else (__domain_ip_handler(misp_attribute), "SUCCESS")
-        if misp_attribute["type"] == "domain|ip"
-        else (__network_handler(misp_attribute), "SUCCESS")
-        if misp_attribute["type"] in HANDLER_IP_TYPES
-        else (None, "IGNORED")
-        if misp_attribute["type"] in HANDLER_IGNORED_TYPES
-        else (None, "UNKNOWN")
-    )
-    if transform_status == "UNKNOWN":
-        logging.error(
-            "Unknown MISP attribute type. Full MISP attribute: %s",
-            repr(json.dumps(misp_attribute)),
-        )
-
-    # Ignore IOC if it doesn't have a required field by defender.
-    if (
-        AZ_TARGET_PRODUCT == "Microsoft Defender ATP"
-        and len(REQUIRED_FIELDS_DEFENDER.intersection(msgraph_ioc.keys())) == 0
-    ):
-        logging.error(
-            "MISP IOC didn't have all data required by Defender: %s",
-            repr(json.dumps(misp_attribute)),
-        )
-        return None
-
-    return msgraph_ioc
-
-
-HANDLER_SIMPLE_TYPES = {
+SIMPLE_TYPES_MAP = {
     "filename": "fileName",
     "domain": "domainName",
     "hostname": "domainName",
@@ -126,7 +82,7 @@ HANDLER_SIMPLE_TYPES = {
 
 
 def __simple_handler(misp_attribute: dict[str, any]) -> dict[str, any]:
-    return {HANDLER_SIMPLE_TYPES[misp_attribute["type"]]: misp_attribute["value"]}
+    return {SIMPLE_TYPES_MAP[misp_attribute["type"]]: misp_attribute["value"]}
 
 
 def __domain_ip_handler(misp_attribute: dict[str, any]) -> dict[str, any]:
@@ -143,16 +99,6 @@ def __email_src_handler(misp_attribute: dict[str, any]) -> dict[str, any]:
     msgraph_ioc["emailSenderAddress"] = misp_attribute["value"]
     msgraph_ioc["emailSourceDomain"] = misp_attribute["value"].split("@")[1]
     return msgraph_ioc
-
-
-HANDLER_FILEHASH_TYPES = [
-    "filename|md5",
-    "filename|sha1",
-    "filename|sha256",
-    "md5",
-    "sha1",
-    "sha256",
-]
 
 
 def __filehash_handler(misp_attribute: dict[str, any]) -> dict[str, any]:
@@ -172,7 +118,6 @@ NETWORK_DIRECTION = {
     "ip-dst": "networkDestination",
     "ip-src": "networkSource",
 }
-HANDLER_IP_TYPES = ["ip-dst", "ip-dst|port", "ip-src", "ip-src|port"]
 
 
 def __network_handler(misp_attribute: dict[str, any]) -> dict[str, any]:
@@ -185,4 +130,58 @@ def __network_handler(misp_attribute: dict[str, any]) -> dict[str, any]:
         msgraph_ioc[network_direction + "Port"] = splitted_value[1]
     else:
         msgraph_ioc[network_direction + ip_version] = misp_attribute["value"]
+    return msgraph_ioc
+
+
+HANDLERS_MAP = {
+    "filename": __simple_handler,
+    "domain": __simple_handler,
+    "hostname": __simple_handler,
+    "url": __simple_handler,
+    "link": __simple_handler,
+    "email-subject": __simple_handler,
+    "mutex": __simple_handler,
+    ##################################################
+    "domain|ip": __domain_ip_handler,
+    ##################################################
+    "email-src": __email_src_handler,
+    ##################################################
+    "filename|md5": __filehash_handler,
+    "filename|sha1": __filehash_handler,
+    "filename|sha256": __filehash_handler,
+    "md5": __filehash_handler,
+    "sha1": __filehash_handler,
+    "sha256": __filehash_handler,
+    ##################################################
+    "ip-dst": __network_handler,
+    "ip-dst|port": __network_handler,
+    "ip-src": __network_handler,
+    "ip-src|port": __network_handler,
+}
+SUPPORTED_TYPES = list(HANDLERS_MAP.keys())
+
+
+def __get_msgraph_ioc(misp_attribute: dict[str, any]):
+    if "type" not in misp_attribute:
+        logging.error(
+            "Corrupt MISP attribute. Full MISP attribute: %s", repr(json.dumps(misp_attribute))
+        )
+        return None
+
+    if misp_attribute["type"] not in HANDLERS_MAP:
+        logging.warning("Ignoring misp ioc with type (%s)", misp_attribute["type"])
+        return None
+    msgraph_ioc = HANDLERS_MAP[misp_attribute["type"]](misp_attribute)
+
+    # Ignore IOC if it doesn't have a required field by defender.
+    if (
+        AZ_TARGET_PRODUCT == "Microsoft Defender ATP"
+        and len(REQUIRED_FIELDS_DEFENDER.intersection(msgraph_ioc.keys())) == 0
+    ):
+        logging.error(
+            "MISP IOC didn't have all data required by Defender: %s",
+            repr(json.dumps(misp_attribute)),
+        )
+        return None
+
     return msgraph_ioc
