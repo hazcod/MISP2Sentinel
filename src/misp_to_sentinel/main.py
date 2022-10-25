@@ -8,6 +8,7 @@ and buggy.
 import logging
 
 from misp_to_sentinel import azure_ti, converter, misp
+from misp_to_sentinel.config import AZ_DAYS_TO_EXPIRE, MISP_LABEL
 
 
 def __setup_logging():
@@ -40,7 +41,9 @@ def main():
     misp_iocs = misp.get_iocs(converter.SUPPORTED_TYPES)
 
     # Convert
-    recent_misp_iocs_as_sentinel = converter.transform_iocs_misp_to_sentinel(misp_iocs)
+    recent_misp_iocs_as_sentinel = converter.transform_iocs_misp_to_sentinel(
+        misp_iocs, AZ_DAYS_TO_EXPIRE, MISP_LABEL
+    )
 
     # Push to Sentinel
     azure_ti.sync_misp_iocs(recent_misp_iocs_as_sentinel)
