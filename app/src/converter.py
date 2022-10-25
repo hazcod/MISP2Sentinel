@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Converter from MISP to Sentinel format."""
 
+import ipaddress
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
@@ -25,11 +26,10 @@ class SentinelIOC:
         return self.__dict__
 
 
-TYPES_MAPPING = {
-    "url": "url",
-    "domain": "domain-name",
-}
-SUPPORTED_TYPES = list(TYPES_MAPPING.keys())
+IP_TYPES = ["ip-src", "ip-dst", "ip-dst|port", "ip-src|port"]
+
+
+SUPPORTED_TYPES = [*IP_TYPES, "url", "domain"]
 
 
 def transform_iocs_misp_to_sentinel(misp_iocs: list[dict[str, any]]) -> list[SentinelIOC]:
@@ -41,9 +41,28 @@ def transform_iocs_misp_to_sentinel(misp_iocs: list[dict[str, any]]) -> list[Sen
     ]
 
 
-def __transform_ioc_misp_to_sentinel(misp_ioc: dict[str, any]) -> SentinelIOC:
+def __ip_version_chooser(address: str) -> str | None:
+    try:
+        match ipaddress.ip_address(address).version:
+            case 4:
+                return "ipv4-addr"
+            case 6:
+                return "ipv6-addr"
+    except ValueError:
+        pass
+    return None
+
+
+def __transform_ioc_misp_to_sentinel(misp_ioc: dict[str, any]) -> SentinelIOC | None:
 
     valid_from = datetime.fromtimestamp(int(misp_ioc["timestamp"]), timezone.utc)
+    value_type = misp_ioc["type"]
+
+    if value_type in IP_TYPES:
+        value_type = __ip_version_chooser(misp_ioc["value"])
+    elif value_type == "domain":
+        value_type = "domain-name"
+
     sentinel_ioc = SentinelIOC(
         source=MISP_LABEL,
         displayName=f"{MISP_LABEL}_attribute_{misp_ioc['id']}",
@@ -56,7 +75,7 @@ def __transform_ioc_misp_to_sentinel(misp_ioc: dict[str, any]) -> SentinelIOC:
             f"{MISP_LABEL}_attribute_id_{misp_ioc['id']}",
         ],
         threatTypes=[misp_ioc["category"].strip()],
-        pattern=f"[{TYPES_MAPPING[misp_ioc['type']]}:value = '{misp_ioc['value']}']",
+        pattern=f"[{value_type}:value = '{misp_ioc['value']}']",
         patternType="stix",
         validFrom=valid_from.isoformat(),
         validUntil=(valid_from + timedelta(days=AZ_DAYS_TO_EXPIRE)).isoformat(),
