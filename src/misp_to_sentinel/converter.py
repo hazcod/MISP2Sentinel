@@ -6,8 +6,6 @@ import ipaddress
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
-from misp_to_sentinel.config import AZ_DAYS_TO_EXPIRE, MISP_LABEL
-
 
 @dataclass(kw_only=True)
 class SentinelIOC:
@@ -32,12 +30,18 @@ IP_TYPES = ["ip-src", "ip-dst", "ip-dst|port", "ip-src|port"]
 SUPPORTED_TYPES = [*IP_TYPES, "url", "domain"]
 
 
-def transform_iocs_misp_to_sentinel(misp_iocs: list[dict[str, any]]) -> list[SentinelIOC]:
+def transform_iocs_misp_to_sentinel(
+    misp_iocs: list[dict[str, any]], ioc_days_to_live: int, misp_label: str
+) -> list[SentinelIOC]:
     """Receive a 'misp attribute' and return a sentinel IOC."""
     return [
         sentinel_ioc
         for misp_ioc in misp_iocs
-        if (sentinel_ioc := __transform_ioc_misp_to_sentinel(misp_ioc))
+        if (
+            sentinel_ioc := __transform_ioc_misp_to_sentinel(
+                misp_ioc, ioc_days_to_live, misp_label
+            )
+        )
     ]
 
 
@@ -53,7 +57,9 @@ def __ip_version_chooser(address: str) -> str | None:
     return None
 
 
-def __transform_ioc_misp_to_sentinel(misp_ioc: dict[str, any]) -> SentinelIOC | None:
+def __transform_ioc_misp_to_sentinel(
+    misp_ioc: dict[str, any], ioc_days_to_live: int, misp_label: str
+) -> SentinelIOC | None:
 
     valid_from = datetime.fromtimestamp(int(misp_ioc["timestamp"]), timezone.utc)
     value_type = misp_ioc["type"]
@@ -64,21 +70,21 @@ def __transform_ioc_misp_to_sentinel(misp_ioc: dict[str, any]) -> SentinelIOC | 
         value_type = "domain-name"
 
     sentinel_ioc = SentinelIOC(
-        source=MISP_LABEL,
-        displayName=f"{MISP_LABEL}_attribute_{misp_ioc['id']}",
+        source=misp_label,
+        displayName=f"{misp_label}_attribute_{misp_ioc['id']}",
         description=(
-            f'({MISP_LABEL} event_id: {misp_ioc["event_id"]}) {misp_ioc["Event"]["info"]}'
+            f'({misp_label} event_id: {misp_ioc["event_id"]}) {misp_ioc["Event"]["info"]}'
         ),
         externalId=misp_ioc["uuid"],
         threatIntelligenceTags=[
-            f"{MISP_LABEL}_event_id_{misp_ioc['event_id']}",
-            f"{MISP_LABEL}_attribute_id_{misp_ioc['id']}",
+            f"{misp_label}_event_id_{misp_ioc['event_id']}",
+            f"{misp_label}_attribute_id_{misp_ioc['id']}",
         ],
         threatTypes=[misp_ioc["category"].strip()],
         pattern=f"[{value_type}:value = '{misp_ioc['value']}']",
         patternType="stix",
         validFrom=valid_from.isoformat(),
-        validUntil=(valid_from + timedelta(days=AZ_DAYS_TO_EXPIRE)).isoformat(),
+        validUntil=(valid_from + timedelta(days=ioc_days_to_live)).isoformat(),
     )
 
     return sentinel_ioc
