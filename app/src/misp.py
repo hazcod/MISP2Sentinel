@@ -35,7 +35,7 @@ def get_iocs(ioc_types: list[str] | None = None) -> dict[str, any]:
         ssl_verify = httpx.create_ssl_context()
         ssl_verify.load_verify_locations(MISP_CA_BUNDLE)
 
-    response = httpx.post(url, json=data, headers=headers, verify=ssl_verify, timeout=None)
+    response = httpx.post(url, json=data, headers=headers, verify=ssl_verify, timeout=MISP_TIMEOUT)
     response_json = response.json()
 
     misp_iocs = response_json["response"]["Attribute"]
