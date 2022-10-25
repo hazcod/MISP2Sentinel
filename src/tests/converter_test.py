@@ -83,3 +83,41 @@ def test_converter_domain():
     )
 
     assert misp_iocs_as_sentinel[0] == expected_sentinel_ioc
+
+
+def test_converter_ipv4():
+    misp_ioc = json.loads(
+        """
+            {
+                "id": "3935934",
+                "event_id": "8627",
+                "category": "Network activity",
+                "type": "ip-src",
+                "uuid": "a6cc5ec3-e3c0-46a3-a92f-65142dafaf94",
+                "timestamp": "1666296048",
+                "value": "192.71.166.142",
+                "Event": {
+                    "info": "Title: October SideWinder attack on the Government of Pakistan"
+                }
+            }
+        """
+    )
+    misp_iocs_as_sentinel = converter.transform_iocs_misp_to_sentinel([misp_ioc], 2, "misp_label")
+
+    expected_sentinel_ioc = converter.SentinelIOC(
+        description=(
+            "(misp_label event_id: 8627) Title: October SideWinder attack on the Government of "
+            "Pakistan"
+        ),
+        displayName="misp_label_attribute_3935934",
+        externalId="a6cc5ec3-e3c0-46a3-a92f-65142dafaf94",
+        pattern="[ipv4-addr:value = '192.71.166.142']",
+        patternType="stix",
+        source="misp_label",
+        threatIntelligenceTags=["misp_label_event_id_8627", "misp_label_attribute_id_3935934"],
+        threatTypes=["Network activity"],
+        validFrom="2022-10-20T20:00:48+00:00",
+        validUntil="2022-10-22T20:00:48+00:00",
+    )
+
+    assert misp_iocs_as_sentinel[0] == expected_sentinel_ioc
