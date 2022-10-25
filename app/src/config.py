@@ -1,12 +1,13 @@
 """Config variables script."""
 from os import environ
 
-RECENT_NUM_DAYS = 5
+RECENT_NUM_DAYS = 10
 
 # MISP
-MISP_BASE_URL = environ.get("MISP_BASE_URL")
-MISP_KEY = environ.get("MISP_KEY")
-MISP_CA_BUNDLE = environ.get("MISP_CA_BUNDLE")
+MISP_LABEL = environ.get("ISAS_MISP_TAG_BASE")
+MISP_BASE_URL = environ.get("ISAS_MISP_BASE_URL")
+MISP_KEY = environ.get("ISAS_MISP_KEY")
+MISP_CA_BUNDLE = environ.get("ISAS_MISP_CA_BUNDLE")
 MISP_EVENT_FILTERS = {
     "timestamp": f"{RECENT_NUM_DAYS}d",
     "published": True,
@@ -14,18 +15,15 @@ MISP_EVENT_FILTERS = {
 }
 MISP_TIMEOUT = 120
 
-# AZURE (MSGRAPH/MANAGEMENT)
-AZ_AUTH_TENANT_ID = environ.get("MSGRAPH_TENANT_ID")
-AZ_AUTH_CLIENT_ID = environ.get("MSGRAPH_CLIENT_ID")
-AZ_AUTH_CLIENT_SECRET = environ.get("MSGRAPH_CLIENT_SECRET")
+# AZURE
+AZ_TENANT_ID = environ.get("ISAS_AZ_TENANT_ID")
+AZ_MISP_CLIENT_ID = environ.get("ISAS_AZ_MISP_CLIENT_ID")
+AZ_MISP_CLIENT_SECRET = environ.get("ISAS_AZ_MISP_CLIENT_SECRET")
 
-AZ_SUBSCRIPTION = environ.get("AZ_SUBSCRIPTION")
-AZ_SENTINEL_RG = environ.get("AZ_SENTINEL_RG")
-AZ_SENTINEL_WORKSPACE_NAME = environ.get("AZ_SENTINEL_WORKSPACE_NAME")
+AZ_SUBSCRIPTION = environ.get("ISAS_AZ_SUBSCRIPTION")
+AZ_SENTINEL_RG = environ.get("ISAS_SENTINEL_RG")
+AZ_SENTINEL_WORKSPACE_NAME = environ.get("ISAS_SENTINEL_WORKSPACE_NAME")
 
-AZ_TARGET_PRODUCT = environ.get("MSGRAPH_TARGET_PRODUCT")
-AZ_ACTION = "alert"
-AZ_PASSIVE_ONLY = False
 AZ_DAYS_TO_EXPIRE = (
-    int(environ.get("MSGRAPH_DAYS_TO_EXPIRE")) if "MSGRAPH_DAYS_TO_EXPIRE" in environ else None
+    int(environ.get("ISAS_DAYS_TO_EXPIRE")) if "ISAS_DAYS_TO_EXPIRE" in environ else None
 )
