@@ -6,7 +6,7 @@ import ipaddress
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
-from config import AZ_DAYS_TO_EXPIRE, MISP_LABEL
+from misp_to_sentinel.config import AZ_DAYS_TO_EXPIRE, MISP_LABEL
 
 
 @dataclass(kw_only=True)

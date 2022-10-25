@@ -7,9 +7,7 @@ and buggy.
 
 import logging
 
-import azure_ti
-import converter
-import misp
+from misp_to_sentinel import azure_ti, converter, misp
 
 
 def __setup_logging():

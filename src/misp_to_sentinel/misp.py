@@ -4,7 +4,8 @@
 import logging
 
 import httpx
-from config import (
+
+from misp_to_sentinel.config import (
     MISP_BASE_URL,
     MISP_CA_BUNDLE,
     MISP_EVENT_FILTERS,

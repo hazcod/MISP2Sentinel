@@ -1,9 +1,10 @@
 import logging
 from datetime import datetime, timedelta, timezone
 
-import azure_api
 import httpx
-from config import (
+
+from misp_to_sentinel import azure_api
+from misp_to_sentinel.config import (
     AZ_DAYS_TO_EXPIRE,
     AZ_MISP_CLIENT_ID,
     AZ_MISP_CLIENT_SECRET,
@@ -13,7 +14,7 @@ from config import (
     AZ_TENANT_ID,
     RECENT_NUM_DAYS,
 )
-from converter import SentinelIOC
+from misp_to_sentinel.converter import SentinelIOC
 
 logger = logging.getLogger("misp_to_sentinel")
 
