@@ -95,13 +95,17 @@ def __create_ti_sentinel(ma_client: httpx.Client, sentinel_ioc: SentinelIOC):
 
 
 def sync_misp_iocs(recent_misp_iocs_as_sentinel: list[dict[str, any]]):
+    """Push MISP iocs to sentinel (ignoring previously synched IOCs)"""
     ma_client = __create_api_client()
+    # Get current IOCs in Sentinel
     recent_ioc_in_sentinel = __get_misp_ids_of_recent_ioc_in_sentinel(ma_client)
+    # Filter out previously synced IOCs
     iocs_to_push = [
         ioc
         for ioc in recent_misp_iocs_as_sentinel
         if ioc and ioc.externalId not in recent_ioc_in_sentinel
     ]
     logger.info("New MISP IOCs to push: %s", len(iocs_to_push))
+    # Sync
     for sentinel_ioc in iocs_to_push:
         __create_ti_sentinel(ma_client, sentinel_ioc)

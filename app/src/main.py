@@ -37,14 +37,16 @@ def main():
     __setup_logging()
     logger = logging.getLogger("misp_to_sentinel")
     logger.info("Starting")
-    misp_iocs = misp.get_iocs(converter.SUPPORTED_TYPES)
-    recent_misp_iocs_as_sentinel = [
-        msgraph_ioc
-        for misp_ioc in misp_iocs
-        if (msgraph_ioc := converter.transform_misp_to_msgraph(misp_ioc))
-    ]
 
+    # Retrieve from MISP
+    misp_iocs = misp.get_iocs(converter.SUPPORTED_TYPES)
+
+    # Convert
+    recent_misp_iocs_as_sentinel = converter.transform_iocs_misp_to_sentinel(misp_iocs)
+
+    # Push to Sentinel
     azure_ti.sync_misp_iocs(recent_misp_iocs_as_sentinel)
+
     logger.info("Finished")
 
 

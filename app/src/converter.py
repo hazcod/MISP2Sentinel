@@ -31,8 +31,16 @@ TYPES_MAPPING = {
 SUPPORTED_TYPES = list(TYPES_MAPPING.keys())
 
 
-def transform_misp_to_msgraph(misp_ioc: dict[str, any]) -> SentinelIOC:
-    """Receive a 'misp attribute' and return a msgraph IOC."""
+def transform_iocs_misp_to_sentinel(misp_iocs: list[dict[str, any]]) -> list[SentinelIOC]:
+    """Receive a 'misp attribute' and return a sentinel IOC."""
+    return [
+        sentinel_ioc
+        for misp_ioc in misp_iocs
+        if (sentinel_ioc := __transform_ioc_misp_to_sentinel(misp_ioc))
+    ]
+
+
+def __transform_ioc_misp_to_sentinel(misp_ioc: dict[str, any]) -> SentinelIOC:
 
     valid_from = datetime.fromtimestamp(int(misp_ioc["timestamp"]), timezone.utc)
     sentinel_ioc = SentinelIOC(
