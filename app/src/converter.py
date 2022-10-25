@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Converter from MISP to MS-Graph format."""
+"""Converter from MISP to Sentinel format."""
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
