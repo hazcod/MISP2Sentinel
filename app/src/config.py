@@ -1,7 +1,7 @@
 """Config variables script."""
 from os import environ
 
-RECENT_NUM_DAYS = 10
+RECENT_NUM_DAYS = 5
 
 # MISP
 MISP_LABEL = environ.get("ISAS_MISP_TAG_BASE")
