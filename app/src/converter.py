@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 """Converter from MISP to MS-Graph format."""
 
-import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
-from config import AZ_DAYS_TO_EXPIRE, MISP_BASE_URL, MISP_LABEL
+from config import AZ_DAYS_TO_EXPIRE, MISP_LABEL
 
 
 @dataclass(kw_only=True)

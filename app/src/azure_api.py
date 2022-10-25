@@ -7,12 +7,14 @@ import logging
 
 import httpx
 
+logger = logging.getLogger("misp_to_sentinel")
+
 
 def generate_httpx_client(
     client_id: str, client_secret: str, tenant_id: str, resource: str
 ) -> httpx.Client:
     """Return a httpx.Client with bearer token for later requests"""
-    logging.info("Generating auth token for %s for resource %s", client_id, resource)
+    logger.info("Generating auth token for %s for resource %s", client_id, resource)
     # Get bearer token
     data = {
         "resource": resource,

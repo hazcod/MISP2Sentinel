@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""In-house script for pushing ICC MISP IOCs onto Sentinel and Defender. MS' tool is overly complex and buggy."""
+"""
+In-house script for pushing ICC MISP IOCs onto Sentinel and Defender. MS' tool is overly complex
+and buggy.
+"""
 
 import logging
 
@@ -8,11 +11,32 @@ import azure_ti
 import converter
 import misp
 
-logging.basicConfig(level=logging.INFO)
+
+def __setup_logging():
+    logger = logging.getLogger("misp_to_sentinel")
+    logger.setLevel(logging.INFO)
+
+    # Create handler
+    c_handler = logging.StreamHandler()
+
+    # Create formatter and add it to handler
+    c_format = logging.Formatter(
+        fmt="%(asctime)s %(name)s (%(levelname)s) %(filename)s: %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S%z",
+    )
+    c_handler.setFormatter(c_format)
+
+    # Add handlers to the logger
+    logger.addHandler(c_handler)
+
+    logger.propagate = False
 
 
 def main():
     """Main script/function of the whole project."""
+    __setup_logging()
+    logger = logging.getLogger("misp_to_sentinel")
+    logger.info("Starting")
     misp_iocs = misp.get_iocs(converter.SUPPORTED_TYPES)
     recent_misp_iocs_as_sentinel = [
         msgraph_ioc
@@ -21,8 +45,7 @@ def main():
     ]
 
     azure_ti.sync_misp_iocs(recent_misp_iocs_as_sentinel)
-
-    print("get msgraph and compare with misp")
+    logger.info("Finished")
 
 
 if __name__ == "__main__":

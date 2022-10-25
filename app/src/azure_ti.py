@@ -15,6 +15,8 @@ from config import (
 )
 from converter import SentinelIOC
 
+logger = logging.getLogger("misp_to_sentinel")
+
 
 def __ma_url_base() -> str:
     return (
@@ -52,6 +54,12 @@ def __get_misp_ids_of_recent_ioc_in_sentinel(ma_client: httpx.Client) -> list[st
             "Can't get next page"
         )
 
+    logger.info(
+        "Retrieved %s IOCs from sentinel (last %s days)",
+        len(misp_ids_of_recent_ioc_in_sentinel),
+        RECENT_NUM_DAYS,
+    )
+
     return misp_ids_of_recent_ioc_in_sentinel
 
 
@@ -78,8 +86,8 @@ def __create_ti_sentinel(ma_client: httpx.Client, sentinel_ioc: SentinelIOC):
     data = {"kind": "indicator", "properties": sentinel_ioc.as_dict()}
     response = ma_client.post(url, json=data)
     if response.status_code not in [200, 201]:
-        logging.error(
-            "Couldn't create IOC in Sentinel. status_code: %s, data sent: %s. response.content: %s",
+        logger.error(
+            "Couldn't create IOC. status_code: %s, data sent: %s. response.content: %s",
             response.status_code,
             data,
             response.content,
@@ -94,8 +102,6 @@ def sync_misp_iocs(recent_misp_iocs_as_sentinel: list[dict[str, any]]):
         for ioc in recent_misp_iocs_as_sentinel
         if ioc and ioc.externalId not in recent_ioc_in_sentinel
     ]
-    print(f"{len(iocs_to_push)}")
-    print(f"{len(recent_ioc_in_sentinel)}")
-    print(f"{len(recent_misp_iocs_as_sentinel)}")
+    logger.info("New MISP IOCs to push: %s", len(iocs_to_push))
     for sentinel_ioc in iocs_to_push:
         __create_ti_sentinel(ma_client, sentinel_ioc)
