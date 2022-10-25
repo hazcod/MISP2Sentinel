@@ -27,6 +27,7 @@ class SentinelIOC:
 
 TYPES_MAPPING = {
     "url": "url",
+    "domain": "domain-name",
 }
 SUPPORTED_TYPES = list(TYPES_MAPPING.keys())
 
@@ -56,7 +57,7 @@ def __transform_ioc_misp_to_sentinel(misp_ioc: dict[str, any]) -> SentinelIOC:
         ],
         threatTypes=[misp_ioc["category"].strip()],
         pattern=f"[{TYPES_MAPPING[misp_ioc['type']]}:value = '{misp_ioc['value']}']",
-        patternType=TYPES_MAPPING[misp_ioc["type"]],
+        patternType="stix",
         validFrom=valid_from.isoformat(),
         validUntil=(valid_from + timedelta(days=AZ_DAYS_TO_EXPIRE)).isoformat(),
     )
