@@ -185,3 +185,73 @@ def test_converter_ipv6():
     )
 
     assert misp_iocs_as_sentinel[0].pattern == expected_sentinel_ioc.pattern
+
+
+def test_converter_ipv4_with_port():
+    misp_ioc = json.loads(
+        """
+            {
+                "timestamp": "1666296048",
+                "type": "ip-dst|port",
+                "value": "192.71.166.142|1233",
+                "id": "-",
+                "event_id": "-",
+                "category": "-",
+                "uuid": "-",
+                "Event": {
+                    "info": "-"
+                }
+            }
+        """
+    )
+    misp_iocs_as_sentinel = converter.transform_iocs_misp_to_sentinel([misp_ioc], 2, "-")
+
+    expected_sentinel_ioc = converter.SentinelIOC(
+        description="-",
+        displayName="-",
+        externalId="-",
+        pattern="[ipv4-addr:value = '192.71.166.142']",
+        patternType="-",
+        source="-",
+        threatIntelligenceTags=[],
+        threatTypes=[],
+        validFrom="-",
+        validUntil="-",
+    )
+
+    assert misp_iocs_as_sentinel[0].pattern == expected_sentinel_ioc.pattern
+
+
+def test_converter_ipv6_with_port():
+    misp_ioc = json.loads(
+        """
+            {
+                "timestamp": "1666296048",
+                "type": "ip-src|port",
+                "value": "2001:DB8::1|5234",
+                "id": "-",
+                "event_id": "-",
+                "category": "-",
+                "uuid": "-",
+                "Event": {
+                    "info": "-"
+                }
+            }
+        """
+    )
+    misp_iocs_as_sentinel = converter.transform_iocs_misp_to_sentinel([misp_ioc], 2, "-")
+
+    expected_sentinel_ioc = converter.SentinelIOC(
+        description="-",
+        displayName="-",
+        externalId="-",
+        pattern="[ipv6-addr:value = '2001:DB8::1']",
+        patternType="-",
+        source="-",
+        threatIntelligenceTags=[],
+        threatTypes=[],
+        validFrom="-",
+        validUntil="-",
+    )
+
+    assert misp_iocs_as_sentinel[0].pattern == expected_sentinel_ioc.pattern

@@ -24,10 +24,19 @@ class SentinelIOC:
         return self.__dict__
 
 
-IP_TYPES = ["ip-src", "ip-dst", "ip-dst|port", "ip-src|port"]
+TYPE_MAPPINGS = {
+    # IP
+    "ip-dst": "ipv4/ipv6",
+    "ip-dst|port": "ipv4/ipv6",
+    "ip-src": "ipv4/ipv6",
+    "ip-src|port": "ipv4/ipv6",
+    # Others
+    "domain": "domain-name:value",
+    "filename": "file:name",
+    "url": "url:value",
+}
 
-
-SUPPORTED_TYPES = [*IP_TYPES, "url", "domain"]
+SUPPORTED_TYPES = list(TYPE_MAPPINGS.keys())
 
 
 def transform_iocs_misp_to_sentinel(
@@ -49,9 +58,9 @@ def __ip_version_chooser(address: str) -> str | None:
     try:
         match ipaddress.ip_address(address).version:
             case 4:
-                return "ipv4-addr"
+                return "ipv4-addr:value"
             case 6:
-                return "ipv6-addr"
+                return "ipv6-addr:value"
     except ValueError:
         pass
     return None
@@ -62,12 +71,13 @@ def __transform_ioc_misp_to_sentinel(
 ) -> SentinelIOC | None:
 
     valid_from = datetime.fromtimestamp(int(misp_ioc["timestamp"]), timezone.utc)
-    value_type = misp_ioc["type"]
 
-    if value_type in IP_TYPES:
-        value_type = __ip_version_chooser(misp_ioc["value"])
-    elif value_type == "domain":
-        value_type = "domain-name"
+    pattern_key = TYPE_MAPPINGS[misp_ioc["type"]]
+    pattern_value = misp_ioc["value"].split("|")[0]  # split by pipes and take first
+
+    match pattern_key:
+        case "ipv4/ipv6":
+            pattern_key = __ip_version_chooser(pattern_value)
 
     sentinel_ioc = SentinelIOC(
         source=misp_label,
@@ -81,7 +91,7 @@ def __transform_ioc_misp_to_sentinel(
             f"{misp_label}_attribute_id_{misp_ioc['id']}",
         ],
         threatTypes=[misp_ioc["category"].strip()],
-        pattern=f"[{value_type}:value = '{misp_ioc['value']}']",
+        pattern=f"[{pattern_key} = '{pattern_value}']",
         patternType="stix",
         validFrom=valid_from.isoformat(),
         validUntil=(valid_from + timedelta(days=ioc_days_to_live)).isoformat(),
