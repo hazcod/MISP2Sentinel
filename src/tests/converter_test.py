@@ -325,3 +325,73 @@ def test_converter_filename_and_hash():
     )
 
     assert misp_iocs_as_sentinel[0].pattern == expected_sentinel_ioc.pattern
+
+
+def test_converter_email_addr():
+    misp_ioc = json.loads(
+        """
+        {
+            "timestamp": "1666296048",
+            "type": "email",
+            "value": "postmaster@mertalijaveral.com",
+            "id": "-",
+            "event_id": "-",
+            "category": "-",
+            "uuid": "-",
+            "Event": {
+                "info": "-"
+            }
+        }
+        """
+    )
+    misp_iocs_as_sentinel = converter.transform_iocs_misp_to_sentinel([misp_ioc], 2, "-")
+
+    expected_sentinel_ioc = converter.SentinelIOC(
+        description="-",
+        displayName="-",
+        externalId="-",
+        pattern="[email-addr:value = 'postmaster@mertalijaveral.com']",
+        patternType="-",
+        source="-",
+        threatIntelligenceTags=[],
+        threatTypes=[],
+        validFrom="-",
+        validUntil="-",
+    )
+
+    assert misp_iocs_as_sentinel[0].pattern == expected_sentinel_ioc.pattern
+
+
+def test_converter_email_subject():
+    misp_ioc = json.loads(
+        """
+        {
+            "timestamp": "1666296048",
+            "type": "email-subject",
+            "value": "Storage Capacity Full",
+            "id": "-",
+            "event_id": "-",
+            "category": "-",
+            "uuid": "-",
+            "Event": {
+                "info": "-"
+            }
+        }
+        """
+    )
+    misp_iocs_as_sentinel = converter.transform_iocs_misp_to_sentinel([misp_ioc], 2, "-")
+
+    expected_sentinel_ioc = converter.SentinelIOC(
+        description="-",
+        displayName="-",
+        externalId="-",
+        pattern="[email-message:subject = 'Storage Capacity Full']",
+        patternType="-",
+        source="-",
+        threatIntelligenceTags=[],
+        threatTypes=[],
+        validFrom="-",
+        validUntil="-",
+    )
+
+    assert misp_iocs_as_sentinel[0].pattern == expected_sentinel_ioc.pattern

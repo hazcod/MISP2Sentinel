@@ -80,6 +80,11 @@ TYPE_MAPPINGS = {
     "filename|ssdeep": CustomTypes.FILENAME_AND_HASH,
     "filename|tlsh": CustomTypes.FILENAME_AND_HASH,
     "filename|vhash": CustomTypes.FILENAME_AND_HASH,
+    # Email
+    "email-dst": "email-addr:value",
+    "email-src": "email-addr:value",
+    "email": "email-addr:value",
+    "email-subject": "email-message:subject",
     # Others
     "domain": "domain-name:value",
     "filename": "file:name",
