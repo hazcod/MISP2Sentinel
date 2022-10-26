@@ -290,3 +290,38 @@ def test_converter_hash():
     )
 
     assert misp_iocs_as_sentinel[0].pattern == expected_sentinel_ioc.pattern
+
+
+def test_converter_filename_and_hash():
+    misp_ioc = json.loads(
+        """
+        {
+            "timestamp": "1666296048",
+            "type": "filename|authentihash",
+            "value": "corona.exe|f95796ef376e55fb9671fa604c8955ffbfbad9f96936b3acca3e52b0992414af",
+            "id": "-",
+            "event_id": "-",
+            "category": "-",
+            "uuid": "-",
+            "Event": {
+                "info": "-"
+            }
+        }
+        """
+    )
+    misp_iocs_as_sentinel = converter.transform_iocs_misp_to_sentinel([misp_ioc], 2, "-")
+
+    expected_sentinel_ioc = converter.SentinelIOC(
+        description="-",
+        displayName="-",
+        externalId="-",
+        pattern="[file:name = 'corona.exe' AND file:hashes.'AUTHENTIHASH' = 'f95796ef376e55fb9671fa604c8955ffbfbad9f96936b3acca3e52b0992414af']",
+        patternType="-",
+        source="-",
+        threatIntelligenceTags=[],
+        threatTypes=[],
+        validFrom="-",
+        validUntil="-",
+    )
+
+    assert misp_iocs_as_sentinel[0].pattern == expected_sentinel_ioc.pattern

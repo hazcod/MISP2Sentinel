@@ -34,6 +34,25 @@ TYPE_MAPPINGS = {
     "ip-src": "ipv4/ipv6",
     "ip-src|port": "ipv4/ipv6",
     # File hashes
+    "filename|authentihash": "filename|hash",
+    "filename|impfuzzy": "filename|hash",
+    "filename|imphash": "filename|hash",
+    "filename|md5": "filename|hash",
+    "filename|pehash": "filename|hash",
+    "filename|sha1": "filename|hash",
+    "filename|sha224": "filename|hash",
+    "filename|sha256": "filename|hash",
+    "filename|sha3-224": "filename|hash",
+    "filename|sha3-256": "filename|hash",
+    "filename|sha3-384": "filename|hash",
+    "filename|sha3-512": "filename|hash",
+    "filename|sha384": "filename|hash",
+    "filename|sha512": "filename|hash",
+    "filename|sha512/224": "filename|hash",
+    "filename|sha512/256": "filename|hash",
+    "filename|ssdeep": "filename|hash",
+    "filename|tlsh": "filename|hash",
+    "filename|vhash": "filename|hash",
     "authentihash": "hash",
     "impfuzzy": "hash",
     "imphash": "hash",
@@ -97,15 +116,24 @@ def __transform_ioc_misp_to_sentinel(
 
     valid_from = datetime.fromtimestamp(int(misp_ioc["timestamp"]), timezone.utc)
 
-    pattern_key = TYPE_MAPPINGS[misp_ioc["type"]]
-    pattern_value = misp_ioc["value"].split("|")[0]  # split by pipes and take first
+    pattern_type = TYPE_MAPPINGS.get(misp_ioc["type"])
+    if not pattern_type:
+        return None
+    simple_value = misp_ioc["value"].split("|")[0]  # split by pipes and take first
+    pattern = f"[{pattern_type} = '{simple_value}']"
 
-    match pattern_key:
+    match pattern_type:
         case "ipv4/ipv6":
-            pattern_key = __ip_version_chooser(pattern_value)
+            pattern = f"[{__ip_version_chooser(simple_value)} = '{simple_value}']"
         case "hash":
-            pattern_value = misp_ioc["value"]
-            pattern_key = f"file:hashes.'{misp_ioc['type'].upper()}'"
+            pattern = f"[file:hashes.'{misp_ioc['type'].upper()}' = '{misp_ioc['value']}']"
+        case "filename|hash":
+            value_parts = misp_ioc["value"].split("|")
+            hash_type = misp_ioc["type"].split("|")[1]
+            pattern = (
+                f"[file:name = '{value_parts[0]}' AND "
+                f"file:hashes.'{hash_type.upper()}' = '{value_parts[1]}']"
+            )
 
     sentinel_ioc = SentinelIOC(
         source=misp_label,
@@ -119,7 +147,7 @@ def __transform_ioc_misp_to_sentinel(
             f"{misp_label}_attribute_id_{misp_ioc['id']}",
         ],
         threatTypes=[misp_ioc["category"].strip()],
-        pattern=f"[{pattern_key} = '{pattern_value}']",
+        pattern=pattern,
         patternType="stix",
         validFrom=valid_from.isoformat(),
         validUntil=(valid_from + timedelta(days=ioc_days_to_live)).isoformat(),
