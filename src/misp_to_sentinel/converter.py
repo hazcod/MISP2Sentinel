@@ -3,8 +3,11 @@
 """Converter from MISP to Sentinel format."""
 
 import ipaddress
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+
+logger = logging.getLogger("misp_to_sentinel")
 
 
 @dataclass(kw_only=True)
@@ -63,7 +66,7 @@ def transform_iocs_misp_to_sentinel(
     misp_iocs: list[dict[str, any]], ioc_days_to_live: int, misp_label: str
 ) -> list[SentinelIOC]:
     """Receive a 'misp attribute' and return a sentinel IOC."""
-    return [
+    converted_iocs = [
         sentinel_ioc
         for misp_ioc in misp_iocs
         if (
@@ -72,6 +75,8 @@ def transform_iocs_misp_to_sentinel(
             )
         )
     ]
+    logger.info("Converted IOCs (MISP to Sentinel): %s", len(converted_iocs))
+    return converted_iocs
 
 
 def __ip_version_chooser(address: str) -> str | None:
