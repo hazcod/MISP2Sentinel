@@ -30,6 +30,26 @@ TYPE_MAPPINGS = {
     "ip-dst|port": "ipv4/ipv6",
     "ip-src": "ipv4/ipv6",
     "ip-src|port": "ipv4/ipv6",
+    # File hashes
+    "authentihash": "hash",
+    "impfuzzy": "hash",
+    "imphash": "hash",
+    "md5": "hash",
+    "pehash": "hash",
+    "sha1": "hash",
+    "sha224": "hash",
+    "sha256": "hash",
+    "sha3-224": "hash",
+    "sha3-256": "hash",
+    "sha3-384": "hash",
+    "sha3-512": "hash",
+    "sha384": "hash",
+    "sha512": "hash",
+    "sha512/224": "hash",
+    "sha512/256": "hash",
+    "ssdeep": "hash",
+    "tlsh": "hash",
+    "vhash": "hash",
     # Others
     "domain": "domain-name:value",
     "filename": "file:name",
@@ -78,6 +98,9 @@ def __transform_ioc_misp_to_sentinel(
     match pattern_key:
         case "ipv4/ipv6":
             pattern_key = __ip_version_chooser(pattern_value)
+        case "hash":
+            pattern_value = misp_ioc["value"]
+            pattern_key = f"file:hashes.'{misp_ioc['type'].upper()}'"
 
     sentinel_ioc = SentinelIOC(
         source=misp_label,
