@@ -255,3 +255,38 @@ def test_converter_ipv6_with_port():
     )
 
     assert misp_iocs_as_sentinel[0].pattern == expected_sentinel_ioc.pattern
+
+
+def test_converter_hash():
+    misp_ioc = json.loads(
+        """
+            {
+                "timestamp": "1666296048",
+                "type": "vhash",
+                "value": "017057555d6d141az25!z",
+                "id": "-",
+                "event_id": "-",
+                "category": "-",
+                "uuid": "-",
+                "Event": {
+                    "info": "-"
+                }
+            }
+        """
+    )
+    misp_iocs_as_sentinel = converter.transform_iocs_misp_to_sentinel([misp_ioc], 2, "-")
+
+    expected_sentinel_ioc = converter.SentinelIOC(
+        description="-",
+        displayName="-",
+        externalId="-",
+        pattern="[file:hashes.'VHASH' = '017057555d6d141az25!z']",
+        patternType="-",
+        source="-",
+        threatIntelligenceTags=[],
+        threatTypes=[],
+        validFrom="-",
+        validUntil="-",
+    )
+
+    assert misp_iocs_as_sentinel[0].pattern == expected_sentinel_ioc.pattern
