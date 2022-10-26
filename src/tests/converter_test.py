@@ -315,7 +315,10 @@ def test_converter_filename_and_hash():
         description="-",
         displayName="-",
         externalId="-",
-        pattern="[file:name = 'corona.exe' AND file:hashes.'AUTHENTIHASH' = 'f95796ef376e55fb9671fa604c8955ffbfbad9f96936b3acca3e52b0992414af']",
+        pattern=(
+            "[file:name = 'corona.exe' AND file:hashes.'AUTHENTIHASH' = "
+            "'f95796ef376e55fb9671fa604c8955ffbfbad9f96936b3acca3e52b0992414af']"
+        ),
         patternType="-",
         source="-",
         threatIntelligenceTags=[],
