@@ -6,6 +6,7 @@ import ipaddress
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from enum import Enum
 
 logger = logging.getLogger("misp_to_sentinel")
 
@@ -27,51 +28,58 @@ class SentinelIOC:
         return self.__dict__
 
 
+class CustomTypes(Enum):
+    IP = "ipv4/ipv6"
+    HASH = "hash"
+    FILENAME_AND_HASH = "filename|hash"
+
+
 TYPE_MAPPINGS = {
     # IP
-    "ip-dst": "ipv4/ipv6",
-    "ip-dst|port": "ipv4/ipv6",
-    "ip-src": "ipv4/ipv6",
-    "ip-src|port": "ipv4/ipv6",
-    # File hashes
-    "filename|authentihash": "filename|hash",
-    "filename|impfuzzy": "filename|hash",
-    "filename|imphash": "filename|hash",
-    "filename|md5": "filename|hash",
-    "filename|pehash": "filename|hash",
-    "filename|sha1": "filename|hash",
-    "filename|sha224": "filename|hash",
-    "filename|sha256": "filename|hash",
-    "filename|sha3-224": "filename|hash",
-    "filename|sha3-256": "filename|hash",
-    "filename|sha3-384": "filename|hash",
-    "filename|sha3-512": "filename|hash",
-    "filename|sha384": "filename|hash",
-    "filename|sha512": "filename|hash",
-    "filename|sha512/224": "filename|hash",
-    "filename|sha512/256": "filename|hash",
-    "filename|ssdeep": "filename|hash",
-    "filename|tlsh": "filename|hash",
-    "filename|vhash": "filename|hash",
-    "authentihash": "hash",
-    "impfuzzy": "hash",
-    "imphash": "hash",
-    "md5": "hash",
-    "pehash": "hash",
-    "sha1": "hash",
-    "sha224": "hash",
-    "sha256": "hash",
-    "sha3-224": "hash",
-    "sha3-256": "hash",
-    "sha3-384": "hash",
-    "sha3-512": "hash",
-    "sha384": "hash",
-    "sha512": "hash",
-    "sha512/224": "hash",
-    "sha512/256": "hash",
-    "ssdeep": "hash",
-    "tlsh": "hash",
-    "vhash": "hash",
+    "ip-dst": CustomTypes.IP,
+    "ip-dst|port": CustomTypes.IP,
+    "ip-src": CustomTypes.IP,
+    "ip-src|port": CustomTypes.IP,
+    # Hashes
+    "authentihash": CustomTypes.HASH,
+    "impfuzzy": CustomTypes.HASH,
+    "imphash": CustomTypes.HASH,
+    "md5": CustomTypes.HASH,
+    "pehash": CustomTypes.HASH,
+    "sha1": CustomTypes.HASH,
+    "sha224": CustomTypes.HASH,
+    "sha256": CustomTypes.HASH,
+    "sha3-224": CustomTypes.HASH,
+    "sha3-256": CustomTypes.HASH,
+    "sha3-384": CustomTypes.HASH,
+    "sha3-512": CustomTypes.HASH,
+    "sha384": CustomTypes.HASH,
+    "sha512": CustomTypes.HASH,
+    "sha512/224": CustomTypes.HASH,
+    "sha512/256": CustomTypes.HASH,
+    "ssdeep": CustomTypes.HASH,
+    "tlsh": CustomTypes.HASH,
+    "vhash": CustomTypes.HASH,
+    # File name and hashes
+    "filename|authentihash": CustomTypes.FILENAME_AND_HASH,
+    "filename|impfuzzy": CustomTypes.FILENAME_AND_HASH,
+    "filename|imphash": CustomTypes.FILENAME_AND_HASH,
+    "filename|md5": CustomTypes.FILENAME_AND_HASH,
+    "filename|pehash": CustomTypes.FILENAME_AND_HASH,
+    "filename|sha1": CustomTypes.FILENAME_AND_HASH,
+    "filename|sha224": CustomTypes.FILENAME_AND_HASH,
+    "filename|sha256": CustomTypes.FILENAME_AND_HASH,
+    "filename|sha3-224": CustomTypes.FILENAME_AND_HASH,
+    "filename|sha3-256": CustomTypes.FILENAME_AND_HASH,
+    "filename|sha3-384": CustomTypes.FILENAME_AND_HASH,
+    "filename|sha3-512": CustomTypes.FILENAME_AND_HASH,
+    "filename|sha384": CustomTypes.FILENAME_AND_HASH,
+    "filename|sha512": CustomTypes.FILENAME_AND_HASH,
+    "filename|sha512/224": CustomTypes.FILENAME_AND_HASH,
+    "filename|sha512/256": CustomTypes.FILENAME_AND_HASH,
+    "filename|ssdeep": CustomTypes.FILENAME_AND_HASH,
+    "filename|tlsh": CustomTypes.FILENAME_AND_HASH,
+    "filename|vhash": CustomTypes.FILENAME_AND_HASH,
     # Others
     "domain": "domain-name:value",
     "filename": "file:name",
@@ -123,11 +131,11 @@ def __transform_ioc_misp_to_sentinel(
     pattern = f"[{pattern_type} = '{simple_value}']"
 
     match pattern_type:
-        case "ipv4/ipv6":
+        case CustomTypes.IP:
             pattern = f"[{__ip_version_chooser(simple_value)} = '{simple_value}']"
-        case "hash":
+        case CustomTypes.HASH:
             pattern = f"[file:hashes.'{misp_ioc['type'].upper()}' = '{misp_ioc['value']}']"
-        case "filename|hash":
+        case CustomTypes.FILENAME_AND_HASH:
             value_parts = misp_ioc["value"].split("|")
             hash_type = misp_ioc["type"].split("|")[1]
             pattern = (
