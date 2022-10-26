@@ -110,9 +110,9 @@ def __ip_version_chooser(address: str) -> str | None:
     try:
         match ipaddress.ip_address(address).version:
             case 4:
-                return "ipv4-addr:value"
+                return "ipv4-addr"
             case 6:
-                return "ipv6-addr:value"
+                return "ipv6-addr"
     except ValueError:
         pass
     return None
@@ -132,7 +132,7 @@ def __transform_ioc_misp_to_sentinel(
 
     match pattern_type:
         case CustomTypes.IP:
-            pattern = f"[{__ip_version_chooser(simple_value)} = '{simple_value}']"
+            pattern = f"[{__ip_version_chooser(simple_value)}:value = '{simple_value}']"
         case CustomTypes.HASH:
             pattern = f"[file:hashes.'{misp_ioc['type'].upper()}' = '{misp_ioc['value']}']"
         case CustomTypes.FILENAME_AND_HASH:
