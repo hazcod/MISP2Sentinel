@@ -13,6 +13,7 @@ logger = logging.getLogger("misp_to_sentinel")
 
 @dataclass(kw_only=True)
 class SentinelIOC:
+    # pylint: disable=invalid-name
     source: str
     displayName: str
     description: str
