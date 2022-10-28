@@ -18,7 +18,7 @@ from misp_to_sentinel.config import (
 logger = logging.getLogger("misp_to_sentinel")
 
 
-def get_iocs(ioc_types: Union[list[str], None] = None) -> dict[str, any]:
+def get_iocs(ioc_types: list[str] = []) -> dict[str, any]:
     """Method to pull the attributes (IOCs) from MISP server."""
     if not (MISP_BASE_URL and MISP_EVENT_FILTERS and MISP_KEY and MISP_TIMEOUT):
         raise Exception("Environment variables for MISP not available")
