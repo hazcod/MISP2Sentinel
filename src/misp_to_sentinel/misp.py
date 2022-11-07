@@ -12,7 +12,7 @@ from misp_to_sentinel.config import (
     MISP_EVENT_FILTERS,
     MISP_KEY,
     MISP_TIMEOUT,
-    RECENT_NUM_DAYS,
+    RECENT_NUM_DAYS_MISP,
 )
 
 logger = logging.getLogger("misp_to_sentinel")
@@ -42,7 +42,10 @@ def get_iocs(ioc_types: list[str] = []) -> dict[str, any]:
 
     misp_iocs = response_json["response"]["Attribute"]
     logger.info(
-        "Retrieved %s IOCs from %s (last %s days)", len(misp_iocs), MISP_BASE_URL, RECENT_NUM_DAYS
+        "Retrieved %s IOCs from %s (last %s days)",
+        len(misp_iocs),
+        MISP_BASE_URL,
+        RECENT_NUM_DAYS_MISP,
     )
 
     return response_json["response"]["Attribute"]
