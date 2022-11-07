@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Connector to MISP."""
 import logging
-from typing import Union
 
 import httpx
 
