@@ -22,7 +22,8 @@ jobs:
       if: steps.semantic.outputs.version != ''
       with:
         registry: ghcr.io
-        name: "ghcr.io/hazcod/sentinel2misp/sentinel2misp:${{ steps.semantic.outputs.version }}"
+        name: "ghcr.io/hazcod/sentinel2misp/sentinel2misp"
+        tags: "latest,${{ steps.semantic.outputs.version }}"
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         tag_semver: true
