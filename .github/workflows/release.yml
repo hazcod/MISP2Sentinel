@@ -19,7 +19,7 @@ jobs:
     - 
       name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@3.04
-      if: steps.semrel.outputs.version != ''
+      if: steps.semantic.outputs.version != ''
       with:
         registry: ghcr.io
         name: "ghcr.io/hazcod/sentinel2misp/sentinel2misp:${{ steps.semantic.outputs.version }}"
