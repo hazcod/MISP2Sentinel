@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Connector to MISP."""
+
+"""
+Connector to MISP.
+"""
+
 import logging
 from os import environ
 from typing import Optional
-
 import httpx
 
-from misp_to_sentinel.config import (
+
+from config import (
     MISP_BASE_URL,
     MISP_CA_BUNDLE,
     MISP_EVENT_FILTERS,
@@ -27,12 +31,14 @@ def get_iocs(ioc_types: Optional[list[str]] = None) -> dict[str, any]:
     headers = {
         "Authorization": MISP_KEY,
         "Accept": "application/json",
-        "Content-Type": "application/json",
+        "Content-Type": "json",
     }
     url = f"{MISP_BASE_URL}/attributes/restSearch"
     data = MISP_EVENT_FILTERS.copy()
+
     if ioc_types:
         data["type"] = ioc_types
+    
     ssl_verify = True
     if MISP_CA_BUNDLE:
         ssl_verify = httpx.create_ssl_context()

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """
 In-house script for pushing ICC MISP IOCs onto Sentinel and Defender. MS' tool is overly complex
 and buggy.
@@ -7,8 +8,8 @@ and buggy.
 
 import logging
 
-from misp_to_sentinel import azure_ti, converter, misp
-from misp_to_sentinel.config import AZ_DAYS_TO_EXPIRE, MISP_LABEL
+import azure_ti, converter, misp
+from config import AZ_DAYS_TO_EXPIRE, MISP_LABEL
 
 
 def __setup_logging():

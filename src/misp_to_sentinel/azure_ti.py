@@ -3,8 +3,8 @@ from datetime import datetime, timedelta, timezone
 
 import httpx
 
-from misp_to_sentinel import azure_api
-from misp_to_sentinel.config import (
+import azure_api
+from config import (
     AZ_DAYS_TO_EXPIRE,
     AZ_MISP_CLIENT_ID,
     AZ_MISP_CLIENT_SECRET,
@@ -14,7 +14,7 @@ from misp_to_sentinel.config import (
     AZ_TENANT_ID,
     RECENT_NUM_DAYS_SENTINEL,
 )
-from misp_to_sentinel.converter import SentinelIOC
+from converter import SentinelIOC
 
 logger = logging.getLogger("misp_to_sentinel")
 
@@ -41,15 +41,22 @@ def __get_misp_ids_of_recent_ioc_in_sentinel(ma_client: httpx.Client) -> list[st
             + timedelta(days=AZ_DAYS_TO_EXPIRE)
         ).isoformat(),
     }
+
     misp_ids_of_recent_ioc_in_sentinel = []
     response = ma_client.post(url, json=data)
+
     while True:
         response_json = response.json()
+
+        if 'error' in response_json:
+            raise Exception(url + ' -> ' + response_json['error']['message'])
+
         misp_ids_of_recent_ioc_in_sentinel.extend(
             [ma_ioc["properties"]["externalId"] for ma_ioc in response_json["value"]]
         )
         if "nextLink" not in response_json:
             break
+
         raise Exception(
             "API (management.azure.com for querying TIs) seems to be broken: "
             "Can't get next page"
