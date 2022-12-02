@@ -12,25 +12,20 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Set env
-      id: release
-      run: echo ::set-output name=RELEASE_VERSION::latest
-
     - 
       name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@3.04
       with:
         registry: ghcr.io
-        name: "ghcr.io/hazcod/sentinel2misp/sentinel2misp:${{ steps.vars.release.RELEASE_VERSION }}"
+        name: "ghcr.io/hazcod/sentinel2misp/sentinel2misp:latest"
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         tag_semver: true
     - 
       name: Create GitHub release
       uses: actions/create-release@v1.1.4
-      if: steps.release.outputs.RELEASE_VERSION != ''
       with:
-          tag_name: ${{ steps.vars.outputs.alpine_version }}
+          tag_name: latest
           release_name: sentinel2misp
           draft: false
           prerelease: false
