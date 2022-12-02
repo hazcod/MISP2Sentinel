@@ -9,7 +9,7 @@ build:
 	docker build -t $(DOCKER_IMAGE) $(DOCKER_PATH)
 
 run:
-	docker run --name=$(DOCKER_NAME) -ti --rm --env-file=$(DEV_FILE) --read-only $(DOCKER_IMAGE)
+	docker run --name=$(DOCKER_NAME) -ti --rm --env-file=$(DEV_FILE) --read-only -v $$(pwd)data:/data $(DOCKER_IMAGE)
 
 clean:
 	docker rm -f $(DOCKER_NAME) || true
