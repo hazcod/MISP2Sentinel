@@ -10,7 +10,7 @@ Example docker run:
 
 ```shell
 # dev.env is the file as specified below which contains the configuration
-% docker run --name=misp2sentinel -t --rm --env-file=dev.env--read-only --tmpfs=/data ghcr.io/hazcod/sentinel2misp/sentinel2misp:latest
+% docker run --name=misp2sentinel -t --rm --env-file=dev.env --read-only --tmpfs=/data ghcr.io/hazcod/sentinel2misp/sentinel2misp:latest
 ```
 
 ## Build
