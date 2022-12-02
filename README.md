@@ -4,6 +4,15 @@ A Python script that ingests alert telemetry from MISP and inserts it into Micro
 
 It will use environment variables (see `dev.env` below) to connect to both.
 
+## Usage
+
+Example docker run:
+
+```shell
+# dev.env is the file as specified below which contains the configuration
+% docker run --name=misp2sentinel -t --rm --env-file=dev.env--read-only --tmpfs=/data ghcr.io/hazcod/sentinel2misp/sentinel2misp:latest
+```
+
 ## Build
 
 With `make` and `docker` installed locally:
@@ -12,7 +21,7 @@ With `make` and `docker` installed locally:
 % make build
 ```
 
-## Run
+## Local development
 
 First create a local development file called `dev.env`:
 
