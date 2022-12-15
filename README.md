@@ -29,6 +29,7 @@ First create a local development file called `dev.env`:
 MISP_EVENT_LIMIT=1
 MISP_BASE_URL=https://
 MISP_KEY=
+MISP_EVENT_TIMEFRAME=7d
 
 AZ_TENANT_ID=
 AZ_MISP_CLIENT_ID=

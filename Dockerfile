@@ -21,4 +21,4 @@ ENV HOME /home/syncuser
 USER 1000
 
 ENTRYPOINT ["python"]
-CMD ["main.py"]
+CMD ["main.py", "-v"]

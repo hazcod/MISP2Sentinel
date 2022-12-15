@@ -9,7 +9,7 @@ targetProduct = 'Azure Sentinel'
 misp_event_filters = {
     'org': '',
     'category': '',
-    'timestamp': '30d',
+    'timestamp': os.environ.get('MISP_EVENT_TIMEFRAME'),
 }
 action = 'alert'
 passiveOnly = False

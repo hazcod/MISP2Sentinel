@@ -55,9 +55,13 @@ def _handle_diamond_model(parsed_event):
 def _handle_tlp_level(parsed_event):
     for tag in parsed_event['tags']:
         if 'tlp:' in tag:
-            parsed_event['tlpLevel'] = tag.split(':')[1]
+            tlpLevel = str(tag.split(':')[1]).lower()
+            if tlpLevel not in ['unknown','white','green','amber','red']:
+                continue
+            parsed_event['tlpLevel'] = tlpLevel
+
     if 'tlpLevel' not in parsed_event:
-        parsed_event['tlpLevel'] = 'red'
+        parsed_event['tlpLevel'] = 'unknown'
 
 
 def main():
