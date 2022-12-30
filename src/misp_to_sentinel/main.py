@@ -8,7 +8,7 @@ from RequestObject import RequestObject
 from constants import *
 import sys
 from functools import reduce
-
+import os
 
 def _get_events():
     misp = ExpandedPyMISP(config.misp_domain, config.misp_key, config.misp_verifycert)
@@ -98,6 +98,8 @@ def main():
         for request_body in _graph_post_request_body_generator(parsed_events):
             #print(f"request body: {request_body}")
             request_manager.handle_indicator(request_body)
+
+    RequestManager.delete_old_indicators()
 
 
 if __name__ == '__main__':

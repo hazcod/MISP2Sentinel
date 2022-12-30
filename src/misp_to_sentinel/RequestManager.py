@@ -5,7 +5,8 @@ import os
 import json
 import copy
 from constants import *
-
+import dateutil
+from datetime import datetime
 
 class RequestManager:
     """A class that handles submitting TiIndicators to MS Graph Security API
@@ -34,7 +35,7 @@ class RequestManager:
         except FileNotFoundError:
             self.expiration_date_fd = open(EXPIRATION_DATE_FILE_NAME, 'w')
             self.expiration_date = self._get_expiration_date_from_config()
-        if self.expiration_date <= datetime.datetime.utcnow().strftime('%Y-%m-%d'):
+        if self.expiration_date <= datetime.utcnow().strftime('%Y-%m-%d'):
             self.existing_indicators_hash = {}
             self.expiration_date = self._get_expiration_date_from_config()
         self.hash_of_indicators_to_delete = copy.deepcopy(self.existing_indicators_hash)
@@ -57,7 +58,7 @@ class RequestManager:
 
     @staticmethod
     def _get_expiration_date_from_config():
-        return (datetime.datetime.utcnow() + datetime.timedelta(config.days_to_expire)).strftime('%Y-%m-%d')
+        return (datetime.utcnow() + datetime.timedelta(config.days_to_expire)).strftime('%Y-%m-%d')
 
     @staticmethod
     def _get_access_token(tenant, client_id, client_secret):
@@ -144,7 +145,7 @@ class RequestManager:
 
     @staticmethod
     def _get_datetime_now():
-        return str(datetime.datetime.now()).replace(' ', '_')
+        return str(datetime.now()).replace(' ', '_')
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         #if config.targetProduct in TARGET_PRODUCT_BULK_SUPPORT:
@@ -197,6 +198,43 @@ class RequestManager:
         self.indicators_to_be_sent = []
         self._log_post(response)
 
+    def delete_old_indicators():
+        access_token = RequestManager._get_access_token(
+            config.graph_auth[TENANT],
+            config.graph_auth[CLIENT_ID],
+            config.graph_auth[CLIENT_SECRET])
+
+        today = datetime.now()
+ 
+        url = GRAPH_TI_INDICATORS_URL + '?$filter=expirationDateTime lt ' + today.strftime('%Y-%m-%d')
+
+        response = requests.get(
+            url,
+            headers={"Authorization": f"Bearer {access_token}"},
+            timeout=10,
+        ).json()
+
+        if 'error' in response:
+            print('ERROR during TI cleanup: ' + str(response['error']))
+            return
+
+        indicators = response['value']
+
+        if len(indicators) == 0:
+            print('No expired TI indicators found')
+            return
+
+        print('Looking at %d expired TI indicators' % len(indicators))
+
+        expiredIndicators = []
+        for tilIndicator in indicators:
+            tiID = tilIndicator['id']
+            expiredIndicators.append(tiID)
+
+        request_body = {'value': expiredIndicators}
+        response = requests.post(GRAPH_BULK_DEL_URL, headers={"Authorization": f"Bearer {access_token}"}, timeout=30, json=request_body).json()
+        print(response)
+
     def handle_indicator(self, indicator):
         self._update_headers_if_expired()
         indicator[EXPIRATION_DATE_TIME] = self.expiration_date
@@ -226,7 +264,7 @@ class RequestManager:
 
     @staticmethod
     def _get_timestamp():
-        return datetime.datetime.now().timestamp()
+        return datetime.now().timestamp()
 
     def _get_total_indicators_sent(self):
         return self.error_count + self.success_count
