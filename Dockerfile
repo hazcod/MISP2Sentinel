@@ -1,4 +1,4 @@
-FROM python:3.11.3-alpine
+FROM python:3.11.4-alpine
 
 ENV PYTHONUNBUFFERED=1
 ENV TMP_PACKAGES="gcc python3-dev musl-dev libffi-dev"
